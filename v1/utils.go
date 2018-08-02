@@ -16,3 +16,6 @@ func FirstNonEmptyString(args ...string) string {
 	}
 	return ""
 }
+
+// StatusOK returns true if a status code is a 2XX code
+func StatusOK(code int) bool { return code >= 200 && code <= 299 }
