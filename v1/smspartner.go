@@ -2,6 +2,8 @@ package smspartner
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -33,7 +35,25 @@ func NewClientFromEnv() (*Client, error) {
 	return &Client{apiKey: apikey}, nil
 }
 
-//func (c *Client) doRequest(req *http.Request) {}
+func (c *Client) httpClient() *http.Client {
+	return &http.Client{}
+}
+
+func (c *Client) doRequest(req *http.Request) ([]byte, error) {
+	res, err := c.httpClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+
+	// REVIEW: Handle non 2xx errors
+
+	blob, err := ioutil.ReadAll(res.Body)
+	return blob, err
+}
 
 // firstNonEmptyString iterates through its
 // arguments trying to find the first string
