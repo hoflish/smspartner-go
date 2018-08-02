@@ -22,8 +22,16 @@ type SMS struct {
 	// Sandbox
 }
 
+type SMSResponse struct {
+	*SPError
+	MessageID int
+	NumberSMS int
+	Cost      float64
+	Currency  string
+}
+
 // SendSMS send SMS, either immediately or at a set time.
-func (c *Client) SendSMS(sms *SMS) (*SMS, error) {
+func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 	// TODO: Validate SMS fields
 	s := &SMS{
 		ApiKey:       c.apiKey,
@@ -47,10 +55,9 @@ func (c *Client) SendSMS(sms *SMS) (*SMS, error) {
 		return nil, err
 	}
 
-	ss := new(SMS)
-	if err := json.Unmarshal(blob, ss); err != nil {
+	smsr := new(SMSResponse)
+	if err := json.Unmarshal(blob, smsr); err != nil {
 		return nil, err
 	}
-	return ss, nil
-
+	return smsr, nil
 }
