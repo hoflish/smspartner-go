@@ -18,7 +18,7 @@ type Client struct {
 }
 
 func NewClient(apikeys ...string) (*Client, error) {
-	if apikey := firstNonEmptyString(apikeys...); apikey != "" {
+	if apikey := FirstNonEmptyString(apikeys...); apikey != "" {
 		return &Client{apiKey: apikey}, nil
 	}
 
@@ -53,19 +53,4 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	blob, err := ioutil.ReadAll(res.Body)
 	return blob, err
-}
-
-// firstNonEmptyString iterates through its
-// arguments trying to find the first string
-// that is not blank or consists entirely  of spaces.
-func firstNonEmptyString(args ...string) string {
-	for _, arg := range args {
-		if arg == "" {
-			continue
-		}
-		if strings.TrimSpace(arg) != "" {
-			return arg
-		}
-	}
-	return ""
 }
