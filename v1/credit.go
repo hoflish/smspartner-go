@@ -36,7 +36,7 @@ type CreditsResponse struct {
 		// handle err
 		res, err := client.CheckCredits()
 		// handle err
-		// diplay response if any
+		// display response if any
 
 */
 func (c *Client) CheckCredits() (*CreditsResponse, error) {
