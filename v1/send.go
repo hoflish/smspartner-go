@@ -21,8 +21,8 @@ import (
 */
 
 type SMSPayload struct {
-	PhoneNumber string `json:"phone"`
-	Message     string
+	PhoneNumber string `json:"phoneNumber,omitempty"`
+	Message     string `json:"message,omitempty"`
 }
 
 type SMS struct {
@@ -65,7 +65,7 @@ type BulkSMSResponse struct {
 		// handle err
 		sms := &smspartner.SMS{
 					PhoneNumbers:    "+212620xxxxxx, +212621xxxxxx",
-					Message: "your message",
+					Message: "This is your message",
 			},
 		}
 		res, err := client.SendSMS(sms)
@@ -110,11 +110,11 @@ func (c *Client) SendSMS(sms *SMS) (map[string]interface{}, error) {
 			SMSList: []*smspartner.SMSPayload{
 				{
 					PhoneNumber:    "+212620xxxxxx",
-					Message: "foo",
+					Message: "This is your message",
 				},
 				{
 					PhoneNumber:    "+212620xxxxxx",
-					Message: "foobar",
+					Message: "This is your message",
 				},
 			},
 		}
@@ -147,4 +147,58 @@ func (c *Client) SendBulkSMS(blksms *BulkSMS) (*BulkSMSResponse, error) {
 		return nil, err
 	}
 	return blksmsr, nil
+}
+
+type VNumber struct {
+	APIKey  string
+	To      string
+	From    string
+	Message string
+
+	// TODO: define optional params
+	// IsStopSMS
+	// Sandbox
+	//Format
+}
+
+// SendVirtualNumber sendw SMS, either immediately or at a set time, with a long number.
+/*
+	Example usage:
+	--------------
+		client, err := smspartner.NewClient()
+		// handle err
+		vn := &smspartner.VNumber{
+			To: "+212620xxxxxx"
+			From: "+212620xxxxxx"
+			Message: "This is your message"
+		}
+		res, err := client.SendVirtualNumber(vn)
+		// handle err
+		// diplay response if any
+
+*/
+func (c *Client) SendVirtualNumber(vn *VNumber) (map[string]interface{}, error) {
+	vn.APIKey = c.apiKey
+
+	blob, err := json.Marshal(vn)
+	if err != nil {
+		return nil, err
+	}
+	fullURL := fmt.Sprintf("%s/vn/send", baseURL)
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err = c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var vnr map[string]interface{}
+	if err := json.Unmarshal(blob, &vnr); err != nil {
+		return nil, err
+	}
+	return vnr, nil
 }
