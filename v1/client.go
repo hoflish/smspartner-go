@@ -58,7 +58,7 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		var err error
 		if res.Body != nil {
 			b, _ := ioutil.ReadAll(res.Body)
-			var resErr *SPError
+			var resErr *ErrResponse
 			if err = json.Unmarshal(b, &resErr); err != nil {
 				return nil, err
 			}

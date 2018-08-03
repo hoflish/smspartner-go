@@ -2,15 +2,11 @@ package smspartner
 
 import "fmt"
 
-type SPError struct {
-	*ResponseState `json:"-"`
-	Message        string    `json:"message,omitempty"`
-	Errors         []*VError `json:"error,omitempty"`
-}
-
-type ResponseState struct {
-	Success bool `json:"success,omitempty"`
-	Code    int  `json:"code,omitempty"`
+type ErrResponse struct {
+	Success bool      `json:"success,omitempty"`
+	Code    int       `json:"code,omitempty"`
+	Message string    `json:"message,omitempty"`
+	Errors  []*VError `json:"error,omitempty"`
 }
 
 type VError struct {
@@ -18,7 +14,7 @@ type VError struct {
 	Message   string `json:"message,omitempty"`
 }
 
-func (spe *SPError) Error() string {
+func (spe *ErrResponse) Error() string {
 	if spe == nil {
 		return ""
 	}

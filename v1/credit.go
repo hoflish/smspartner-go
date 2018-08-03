@@ -20,11 +20,25 @@ type Credits struct {
 }
 
 type CreditsResponse struct {
-	*ResponseState
+	Success bool     `json:"success,omitempty"`
+	Code    int      `json:"code,omitempty"`
 	User    *Profile `json:"user,omitempty"`
 	Credits *Credits `json:"credits,omitempty"`
 }
 
+// CheckCredits return your SMS credit (number of SMS available, based on your own purchases and usage),
+// as well as the number of SMS that are about to be sent.
+// See: https://my.smspartner.fr/documentation-fr/api/v1
+/*
+	Example usage:
+	--------------
+		client, err := smspartner.NewClient()
+		// handle err
+		res, err := client.CheckCredits()
+		// handle err
+		// diplay response if any
+
+*/
 func (c *Client) CheckCredits() (*CreditsResponse, error) {
 	fullURL := fmt.Sprintf("%s/me?apiKey=%s", baseURL, c.apiKey)
 	req, err := http.NewRequest("GET", fullURL, nil)
