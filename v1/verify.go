@@ -37,12 +37,12 @@ type LookupResponse struct {
 /*
 	Example usage:
 	--------------
-	client, err := smspartner.NewClient()
-	// handle err
-	phoneNumbers := []string{"+212620xxxxxx", "+212621xxxxxx"}
-	res, err := client.VerifyNumberFormat(phoneNumbers...)
-	// handle err
-	// diplay response if any
+		client, err := smspartner.NewClient()
+		// handle err
+		phoneNumbers := []string{"+212620xxxxxx", "+212621xxxxxx"}
+		res, err := client.VerifyNumberFormat(phoneNumbers...)
+		// handle err
+		// display response if any
 */
 func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResponse, error) {
 	if len(phoneNumbers) == 0 {
@@ -78,5 +78,50 @@ func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResponse, er
 		return nil, err
 	}
 	return lr, nil
+}
 
+type HLRNotify struct {
+	APIKey       string
+	PhoneNumbers string
+	NotifyURL    string
+}
+
+// CheckNumberValidity checks that a phone number actually exists.
+/*
+	Example usage:
+	--------------
+		client, err := smspartner.NewClient()
+		// handle err
+		hlrNotify := &HLRNotify{
+			PhoneNumbers: "+212620xxxxxx,+212621xxxxxx",
+			NotifyURL: "http://example.com/api/notify"
+		}
+		res, err := client.CheckNumberValidity(hlrNotify)
+		// handle err
+		// display response if any
+*/
+func (c *Client) CheckNumberValidity(hlrn *HLRNotify) (map[string]interface{}, error) {
+	hlrn.APIKey = c.apiKey
+
+	blob, err := json.Marshal(hlrn)
+	if err != nil {
+		return nil, err
+	}
+	fullURL := fmt.Sprintf("%s/hlr/notify", baseURL)
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err = c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var m map[string]interface{}
+	if err := json.Unmarshal(blob, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
