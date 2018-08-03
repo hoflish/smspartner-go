@@ -53,8 +53,8 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		defer res.Body.Close()
 	}
 
+	// REVIEW: Handle non 2xx errors
 	if !StatusOK(res.StatusCode) {
-		// REVIEW: Handle non 2xx errors
 		var err error
 		if res.Body != nil {
 			b, _ := ioutil.ReadAll(res.Body)

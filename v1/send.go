@@ -23,11 +23,12 @@ type SMS struct {
 }
 
 type SMSResponse struct {
-	*SPError
-	MessageID int
-	NumberSMS int
-	Cost      float64
-	Currency  string
+	*ResponseState
+	MessageID   int     `json:"message_id,omitempty"`
+	NumberSMS   int     `json:"nbSMS,omitempty"`
+	Cost        float64 `json:"cost,omitempty"`
+	Currency    string  `json:"currency,omitempty"`
+	PhoneNumber string  `json:"phoneNumber,omitempty"`
 }
 
 // SendSMS send SMS, either immediately or at a set time.

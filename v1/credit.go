@@ -20,7 +20,7 @@ type Credits struct {
 }
 
 type CreditsResponse struct {
-	*SPError
+	*ResponseState
 	User    *Profile `json:"user,omitempty"`
 	Credits *Credits `json:"credits,omitempty"`
 }
