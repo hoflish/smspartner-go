@@ -18,7 +18,7 @@ import (
 		// display response if any
 */
 func (c *Client) CancelSMS(msgID int) (map[string]interface{}, error) {
-	fullURL := fmt.Sprintf("%s/message-cancel?apiKey=%s&messageId=%d", baseURL, c.apiKey, msgID)
+	fullURL := fmt.Sprintf("%s/message-cancel?apiKey=%s&messageId=%d", c.basePath, c.apiKey, msgID)
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		return nil, err

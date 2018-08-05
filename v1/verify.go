@@ -61,7 +61,7 @@ func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResponse, er
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/lookup", baseURL)
+	fullURL := fmt.Sprintf("%s/lookup", c.basePath)
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {
@@ -107,7 +107,7 @@ func (c *Client) CheckNumberValidity(hlrn *HLRNotify) (map[string]interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/hlr/notify", baseURL)
+	fullURL := fmt.Sprintf("%s/hlr/notify", c.basePath)
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {

@@ -80,7 +80,7 @@ func (c *Client) SendSMS(sms *SMS) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/send", baseURL)
+	fullURL := fmt.Sprintf("%s/send", c.basePath)
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {
@@ -130,7 +130,7 @@ func (c *Client) SendBulkSMS(blksms *BulkSMS) (*BulkSMSResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/bulk-send", baseURL)
+	fullURL := fmt.Sprintf("%s/bulk-send", c.basePath)
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {
@@ -184,7 +184,7 @@ func (c *Client) SendVirtualNumber(vn *VNumber) (map[string]interface{}, error) 
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/vn/send", baseURL)
+	fullURL := fmt.Sprintf("%s/vn/send", c.basePath)
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {

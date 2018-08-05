@@ -12,7 +12,7 @@ import (
 	TODO: Add example usage
 */
 func (c *Client) GetSMSStatus(msgID int, phoneNumbers string) (map[string]interface{}, error) {
-	fullURL := fmt.Sprintf("%s/message-status?apiKey=%s&messageId=%d&phoneNumber=%s", baseURL, c.apiKey, msgID, phoneNumbers)
+	fullURL := fmt.Sprintf("%s/message-status?apiKey=%s&messageId=%d&phoneNumber=%s", c.basePath, c.apiKey, msgID, phoneNumbers)
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (c *Client) GetMultiSMSStatus(ss *SMSStatusWrap) (*SMSStatusResponseWrap, e
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/multi-status", baseURL)
+	fullURL := fmt.Sprintf("%s/multi-status", c.basePath)
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {

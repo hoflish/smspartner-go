@@ -40,7 +40,7 @@ type CreditsResponse struct {
 
 */
 func (c *Client) CheckCredits() (*CreditsResponse, error) {
-	fullURL := fmt.Sprintf("%s/me?apiKey=%s", baseURL, c.apiKey)
+	fullURL := fmt.Sprintf("%s/me?apiKey=%s", c.basePath, c.apiKey)
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (c *Client) CheckCredits() (*CreditsResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: handle success response
+	// REVIEW: handle success response
 	credits := new(CreditsResponse)
 	if err := json.Unmarshal(res, credits); err != nil {
 		return nil, err

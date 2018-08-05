@@ -1,0 +1,1 @@
+package smspartner_test
