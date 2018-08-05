@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 const envSMSPartnerAPIKey = "SMSPARTNER_API_KEY"
 const apiBasePath = "http://api.smspartner.fr/v1"
+const clientDefaultTimeout time.Duration = 10 * time.Second
 
 var errUnsetAPIKey = fmt.Errorf("could not find %q in your environment", envSMSPartnerAPIKey)
 
@@ -21,14 +23,22 @@ type Client struct {
 	apiKey   string
 }
 
+// NewClient returns an HTTP client.
 func NewClient(client *http.Client) (*Client, error) {
 	wrapClient := new(http.Client)
 	*wrapClient = *client
 
-	t := client.Transport
-	if t == nil {
-		t = http.DefaultTransport
+	t := client.Timeout
+	if t == 0 {
+		t = clientDefaultTimeout
 	}
+	tr := client.Transport
+	if tr == nil {
+		tr = http.DefaultTransport
+	}
+
+	wrapClient.Timeout = t
+	wrapClient.Transport = tr
 
 	apiKey, err := getAPIKeyFromEnv()
 	if err != nil {
