@@ -60,9 +60,12 @@ func getAPIKeyFromEnv() (string, error) {
 	return apikey, nil
 }
 
+// REVIEW:(hoflish) add context to client methods
+// IMPORTANT: on client side, do we really need context ??
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.hc.Do(req)
+	// REVIEW:(hoflish) handle timeout error ?
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
@@ -88,51 +91,6 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 			return nil, fmt.Errorf("unexpected response: %s", string(body))
 		}
 	}
-	// Each client method handle its expected response data
+	// Note: each client method handle its expected response data
 	return body, nil
-}
-
-// Response ,anonymous struct type, has minimal struct fields to check a server response
-// other object keys are ignored
-type Response struct {
-	Success bool               `json:"success"`
-	Code    int                `json:"code"`
-	Message string             `json:"message,omitempty"`
-	VError  []*ValidationError `json:"error,omitempty"`
-}
-
-type ValidationError struct {
-	ElementID string `json:"elementId,omitempty"`
-	Message   string `json:"message,omitempty"`
-}
-
-func (r *Response) hasVError() bool {
-	if r == nil {
-		return false
-	}
-	return len(r.VError) > 0
-}
-
-func (r *Response) errorSummary() string {
-	if r.hasVError() {
-		msg, n := "", 0
-		for _, e := range r.VError {
-			if e != nil {
-				if n == 0 {
-					msg = e.Message
-				}
-				n++
-			}
-		}
-		switch n {
-		case 0:
-			return "(0 errors)"
-		case 1:
-			return msg
-		case 2:
-			return msg + " (and 1 other error)"
-		}
-		return fmt.Sprintf("%s (and %d other errors)", msg, n-1)
-	}
-	return r.Message
 }
