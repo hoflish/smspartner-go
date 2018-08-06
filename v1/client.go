@@ -75,6 +75,13 @@ func BasePath(basePath string) Option {
 	}
 }
 
+func APIKey(apiKey string) Option {
+	return func(c *Client) error {
+		c.apiKey = apiKey
+		return nil
+	}
+}
+
 func (c *Client) parseOptions(opts ...Option) error {
 	for _, option := range opts {
 		err := option(c)
