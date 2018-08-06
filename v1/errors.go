@@ -2,11 +2,13 @@ package smspartner
 
 import "fmt"
 
-// Response ,anonymous struct type, has minimal struct fields to check a server response
-// other object keys are ignored
-type Response struct {
-	Success bool               `json:"success"`
-	Code    int                `json:"code"`
+// RemoteAPIError is used to handle API error response
+// if there are errors (Success == false && Code != 200) the client library
+// returns a summary of all errors (e.g., "one error (and 2 other errors)").
+// TODO:(hoflish) give client-lib users an option to get verbose errors to handle them
+type RemoteAPIError struct {
+	Success bool               `json:"success,omitempty"`
+	Code    int                `json:"code,omitempty"`
 	Message string             `json:"message,omitempty"`
 	VError  []*ValidationError `json:"error,omitempty"`
 }
@@ -16,7 +18,8 @@ type ValidationError struct {
 	Message   string `json:"message,omitempty"`
 }
 
-func (r *Response) errorSummary() string {
+// ErrorSummary return
+func (r *RemoteAPIError) ErrorSummary() string {
 	if r.hasVError() {
 		msg, n := "", 0
 		for _, e := range r.VError {
@@ -27,7 +30,7 @@ func (r *Response) errorSummary() string {
 				n++
 			}
 		}
-		
+
 		switch n {
 		case 0:
 			return "(0 errors)"
@@ -41,7 +44,7 @@ func (r *Response) errorSummary() string {
 	return r.Message
 }
 
-func (r *Response) hasVError() bool {
+func (r *RemoteAPIError) hasVError() bool {
 	if r == nil {
 		return false
 	}

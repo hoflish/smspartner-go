@@ -78,16 +78,16 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	// handle non-200 status code
 	if resp.StatusCode != http.StatusOK {
-		remResp := &Response{}
-		if err := json.Unmarshal(body, remResp); err != nil {
+		remAPIErr := &RemoteAPIError{}
+		if err := json.Unmarshal(body, remAPIErr); err != nil {
 			return nil, fmt.Errorf("error unmarshalling response: %v", err)
 		}
 
-		if !remResp.Success && remResp.Code != 200 {
-			return nil, errors.New(remResp.errorSummary())
+		if !remAPIErr.Success && remAPIErr.Code != 200 {
+			return nil, errors.New(remAPIErr.ErrorSummary())
 		}
 
-		if remResp == nil {
+		if remAPIErr == nil {
 			return nil, fmt.Errorf("unexpected response: %s", string(body))
 		}
 	}
