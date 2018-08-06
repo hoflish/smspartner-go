@@ -84,7 +84,10 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		}
 
 		if !remAPIErr.Success && remAPIErr.Code != 200 {
-			return nil, errors.New(remAPIErr.ErrorSummary())
+			if remAPIErr.Message != "" {
+				return nil, errors.New(remAPIErr.Message)
+			}
+			return nil, errors.New(remAPIErr.Error())
 		}
 
 		if remAPIErr == nil {

@@ -18,35 +18,24 @@ type ValidationError struct {
 	Message   string `json:"message,omitempty"`
 }
 
-// ErrorSummary return
-func (r *RemoteAPIError) ErrorSummary() string {
-	if r.hasVError() {
-		msg, n := "", 0
-		for _, e := range r.VError {
-			if e != nil {
-				if n == 0 {
-					msg = e.Message
-				}
-				n++
+func (r *RemoteAPIError) Error() string {
+	msg, n := "", 0
+	for _, e := range r.VError {
+		if e != nil {
+			if n == 0 {
+				msg = e.Message
 			}
+			n++
 		}
-
-		switch n {
-		case 0:
-			return "(0 errors)"
-		case 1:
-			return msg
-		case 2:
-			return msg + " (and 1 other error)"
-		}
-		return fmt.Sprintf("%s (and %d other errors)", msg, n-1)
 	}
-	return r.Message
-}
 
-func (r *RemoteAPIError) hasVError() bool {
-	if r == nil {
-		return false
+	switch n {
+	case 0:
+		return "(0 errors)"
+	case 1:
+		return msg
+	case 2:
+		return msg + " (and 1 other error)"
 	}
-	return len(r.VError) > 0
+	return fmt.Sprintf("%s (and %d other errors)", msg, n-1)
 }

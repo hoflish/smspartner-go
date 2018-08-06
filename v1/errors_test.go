@@ -6,15 +6,25 @@ import (
 	"github.com/hoflish/smspartner-go/v1"
 )
 
-func TestSummaryError(t *testing.T) {
+func TestError(t *testing.T) {
 	var tests = []struct {
-		remAPIErrResp  *smspartner.RemoteAPIError
-		wantSummaryErr string
+		remAPIErrResp *smspartner.RemoteAPIError
+		wantErr       string
 	}{
-		{&smspartner.RemoteAPIError{}, ""},
-		{&smspartner.RemoteAPIError{Message: "msg error"}, "msg error"},
+		{&smspartner.RemoteAPIError{}, "(0 errors)"},
 		{&smspartner.RemoteAPIError{
-			Message: "foobarzoo error",
+			VError: []*smspartner.ValidationError{
+				{ElementID: "children[foo].data", Message: "foo error"},
+			},
+		}, "foo error"},
+		{&smspartner.RemoteAPIError{
+			VError: []*smspartner.ValidationError{
+				{ElementID: "children[foo].data", Message: "foo error"},
+				{ElementID: "children[bar].data", Message: "bar error"},
+			},
+		}, "foo error (and 1 other error)"},
+		{&smspartner.RemoteAPIError{
+			Message: "foobar error",
 			VError: []*smspartner.ValidationError{
 				{ElementID: "children[foo].data", Message: "foo error"},
 				{ElementID: "children[bar].data", Message: "bar error"},
@@ -24,8 +34,8 @@ func TestSummaryError(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		want := tt.remAPIErrResp.ErrorSummary()
-		got := tt.wantSummaryErr
+		want := tt.remAPIErrResp.Error()
+		got := tt.wantErr
 		if want != got {
 			t.Errorf("got: '%s', want: '%s'", want, got)
 		}
