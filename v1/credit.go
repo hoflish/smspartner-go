@@ -14,9 +14,13 @@ type Profile struct {
 }
 
 type Credits struct {
-	CreditSMS int `json:"creditSms,omitempty"`
-	ToSend    int `json:"toSend,omitempty"`
-	Solde     int `json:"solde,omitempty"`
+	Balance          string `json:"balance,omitempty"`
+	CreditHlr        int    `json:"creditHlr,omitempty"`
+	CreditSMS        int    `json:"creditSms,omitempty"`
+	CreditSmsLowCost int    `json:"creditSmsLowCost,omitempty"`
+	Currency         string `json:"currency,omitempty"`
+	ToSend           int    `json:"toSend,omitempty"`
+	Solde            string `json:"solde,omitempty"`
 }
 
 type CreditsResponse struct {
@@ -32,11 +36,11 @@ type CreditsResponse struct {
 /*
 	Example usage:
 	--------------
-		client, err := smspartner.NewClient()
+		client, err := smspartner.NewClient(&http.Client{})
 		// handle err
 		res, err := client.CheckCredits()
 		// handle err
-		// display response if any
+		// handle response
 
 */
 func (c *Client) CheckCredits() (*CreditsResponse, error) {
@@ -50,7 +54,7 @@ func (c *Client) CheckCredits() (*CreditsResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	// REVIEW: handle success response
+
 	credits := new(CreditsResponse)
 	if err := json.Unmarshal(res, credits); err != nil {
 		return nil, err
