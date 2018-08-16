@@ -7,22 +7,27 @@ import (
 	"net/http"
 )
 
-/*
- // TODO: Define optional params
- type OptionalParams struct {
-	// Gamme        int
-	// Sender       string
-	// ScheduledDeliveryDate Date
-	// Time
-	// Minute
+type Gamme int
+
+const (
+	Premium Gamme = 1
+	LowCost Gamme = 2
+)
+
+// TODO: Define optional params
+type OptionalParams struct {
+	Gamme                 Gamme
+	Sender                string
+	ScheduledDeliveryDate Date
+	Time                  int
+	Minute                int
 	// IsStopSms
 	// Sandbox
- }
-*/
+}
 
 type SMSPayload struct {
-	PhoneNumber string `json:"phoneNumber,omitempty"`
-	Message     string `json:"message,omitempty"`
+	PhoneNumbers string `json:"phoneNumbers,omitempty"`
+	Message      string `json:"message,omitempty"`
 }
 
 type SMS struct {
