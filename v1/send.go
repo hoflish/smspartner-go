@@ -14,36 +14,47 @@ const (
 	LowCost Gamme = 2
 )
 
-// TODO: Define optional params
-type OptionalParams struct {
-	Gamme                 Gamme
-	Sender                string
-	ScheduledDeliveryDate Date
-	Time                  int
-	Minute                int
-	// IsStopSms
-	// Sandbox
-}
-
 type SMSPayload struct {
 	PhoneNumbers string `json:"phoneNumbers,omitempty"`
 	Message      string `json:"message,omitempty"`
 }
 
 type SMS struct {
-	APIKey       string `json:"apiKey,omitempty"`
-	PhoneNumbers string `json:"phoneNumbers,omitempty"`
-	Message      string `json:"message,omitempty"`
-	//opts OptionalParams
+	APIKey                string `json:"apiKey,omitempty"`
+	PhoneNumbers          string `json:"phoneNumbers,omitempty"`
+	Message               string `json:"message,omitempty"`
+	Gamme                 Gamme  `json:"gamme,omitempty"`
+	Sender                string `json:"sender,omitempty"`
+	ScheduledDeliveryDate string `json:"scheduledDeliveryDate,omitempty"`
+	Time                  int    `json:"time,omitempty"`
+	Minute                int    `json:"minute,omitempty"`
+	// IsStopSms
+	// Sandbox
 }
 
 type BulkSMS struct {
-	APIKey  string        `json:"apiKey,omitempty"`
-	SMSList *[]SMSPayload `json:"SMSList,omitempty"`
-	//opts OptionalParams
+	APIKey                string        `json:"apiKey,omitempty"`
+	SMSList               *[]SMSPayload `json:"SMSList,omitempty"`
+	Gamme                 Gamme         `json:"gamme,omitempty"`
+	Sender                string        `json:"sender,omitempty"`
+	ScheduledDeliveryDate string        `json:"scheduledDeliveryDate,omitempty"`
+	Time                  int           `json:"time,omitempty"`
+	Minute                int           `json:"minute,omitempty"`
+	// IsStopSms
+	// Sandbox
 }
 
-type SMSResponseItem struct {
+type SMSResponse struct {
+	Success               bool    `json:"success,omitempty"`
+	Code                  int     `json:"code,omitempty"`
+	MessageID             int     `json:"message_id,omitempty"`
+	NumberOfSMS           int     `json:"nb_sms,omitempty"`
+	Cost                  float64 `json:"cost,omitempty"`
+	Currency              string  `json:"currency,omitempty"`
+	ScheduledDeliveryDate string  `json:"scheduledDeliveryDate,omitempty"`
+}
+
+/*type SMSResponseItem struct {
 	Success     bool    `json:"success,omitempty"`
 	Code        int     `json:"code,omitempty"`
 	NumberSMS   int     `json:"nbSms,omitempty"`
@@ -59,26 +70,33 @@ type BulkSMSResponse struct {
 	Cost            float64            `json:"cost,omitempty"`
 	NumberSMS       int                `json:"nbSMS,omitempty"`
 	SMSResponseList *[]SMSResponseItem `json:"SMSResponse_List,omiyempty"`
-}
+}*/
 
 // SendSMS sends SMS, either immediately or at a set time.
 // See: https://my.smspartner.fr/documentation-fr/api/v1/send-sms
 /*
 	Example usage:
 	--------------
-		client, err := smspartner.NewClient()
+		client, err := smspartner.NewClient(&http.Client{})
+		// handle err
+		// d := smspartner.NewDate(2018, 8, 16, 17, 45)
+		// minute, err = d.MinuteToSendSMS()
 		// handle err
 		sms := &smspartner.SMS{
 					PhoneNumbers:    "+212620xxxxxx, +212621xxxxxx",
 					Message: "This is your message",
+					Gamme: LowCost,
+					// ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
+					// Time: d.Time.Hour(),
+					// Minute: minute
 			},
 		}
-		res, err := client.SendSMS(sms)
+		res, err = client.SendSMS(sms)
 		// handle err
-		// diplay response if any
+		// handle response
 
 */
-func (c *Client) SendSMS(sms *SMS) (map[string]interface{}, error) {
+func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 	sms.APIKey = c.apiKey
 
 	blob, err := json.Marshal(sms)
@@ -97,7 +115,7 @@ func (c *Client) SendSMS(sms *SMS) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	var smsr map[string]interface{}
+	smsr := new(SMSResponse)
 	if err := json.Unmarshal(blob, &smsr); err != nil {
 		return nil, err
 	}
@@ -128,7 +146,7 @@ func (c *Client) SendSMS(sms *SMS) (map[string]interface{}, error) {
 		// diplay response if any
 
 */
-func (c *Client) SendBulkSMS(blksms *BulkSMS) (*BulkSMSResponse, error) {
+/*func (c *Client) SendBulkSMS(blksms *BulkSMS) (*BulkSMSResponse, error) {
 	blksms.APIKey = c.apiKey
 
 	blob, err := json.Marshal(blksms)
@@ -182,7 +200,7 @@ type VNumber struct {
 		// diplay response if any
 
 */
-func (c *Client) SendVirtualNumber(vn *VNumber) (map[string]interface{}, error) {
+/*func (c *Client) SendVirtualNumber(vn *VNumber) (map[string]interface{}, error) {
 	vn.APIKey = c.apiKey
 
 	blob, err := json.Marshal(vn)
@@ -207,3 +225,4 @@ func (c *Client) SendVirtualNumber(vn *VNumber) (map[string]interface{}, error) 
 	}
 	return vnr, nil
 }
+*/

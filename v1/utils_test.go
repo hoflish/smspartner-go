@@ -26,7 +26,7 @@ func TestDate(t *testing.T) {
 			t.Errorf("#%d. got: %d, want: %d", i, tt.date.Time.Hour(), tt.wantHour)
 		}
 
-		gotMinute, err := tt.date.MinutesToSendSMS()
+		gotMinute, err := tt.date.MinuteToSendSMS()
 		if tt.wantErr != (err != nil) {
 			t.Errorf("#%d. expected a non-nil error", i)
 		}

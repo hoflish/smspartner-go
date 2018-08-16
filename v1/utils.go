@@ -20,8 +20,8 @@ func (date Date) ScheduledDeliveryDate() string {
 	return date.Time.Format(layout)
 }
 
-// MinutesToSendSMS returns the minute when to send SMS
-func (date Date) MinutesToSendSMS() (int, error) {
+// MinuteToSendSMS returns the minute when to send SMS
+func (date Date) MinuteToSendSMS() (int, error) {
 	min := date.Time.Minute()
 	if min%5 != 0 {
 		return 0, fmt.Errorf("Minutes must be of 5 minute interval")
