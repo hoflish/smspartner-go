@@ -35,7 +35,7 @@ func TestSendSMS(t *testing.T) {
 		t.Error(err)
 	}
 	sms := &smspartner.SMS{
-		PhoneNumbers: "0620429957",
+		PhoneNumbers: "0620xxxxxx",
 		Message:      "Your message goes here",
 		Gamme:        smspartner.LowCost,
 		ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
@@ -69,5 +69,48 @@ func TestSendSMS(t *testing.T) {
 		if tt.res.Currency != tt.wantCurrency {
 			t.Errorf("got: %s, want: %s", tt.res.Currency, tt.wantCurrency)
 		}
+	}
+}
+
+func TestSendBulkSMS(t *testing.T) {
+	client, err := smspartner.NewClient(&http.Client{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	d := smspartner.NewDate(2018, 8, 16, 18, 30)
+	minute, err := d.MinuteToSendSMS()
+	if err != nil {
+		t.Error(err)
+	}
+
+	bulksms := &smspartner.BulkSMS{
+		SMSList: []*smspartner.SMSPayload{
+			{
+				PhoneNumber: "0620xxxxxx",
+				Message:     "Your message goes here",
+			},
+			{
+				PhoneNumber: "0666xxxxxx",
+				Message:     "Your message goes here",
+			},
+		},
+		ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
+		Time:   d.Time.Hour(),
+		Minute: minute,
+	}
+
+	res, err := client.SendBulkSMS(bulksms)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var totalCost float64
+	for _, smsrl := range res.SMSResponseList {
+		totalCost += smsrl.Cost
+	}
+
+	if res.Cost != totalCost {
+		t.Errorf("got: %f, want: %f", res.Cost, totalCost)
 	}
 }

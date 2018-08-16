@@ -15,8 +15,8 @@ const (
 )
 
 type SMSPayload struct {
-	PhoneNumbers string `json:"phoneNumbers,omitempty"`
-	Message      string `json:"message,omitempty"`
+	PhoneNumber string `json:"phoneNumber,omitempty"`
+	Message     string `json:"message,omitempty"`
 }
 
 type SMS struct {
@@ -34,7 +34,7 @@ type SMS struct {
 
 type BulkSMS struct {
 	APIKey                string        `json:"apiKey,omitempty"`
-	SMSList               *[]SMSPayload `json:"SMSList,omitempty"`
+	SMSList               []*SMSPayload `json:"SMSList,omitempty"`
 	Gamme                 Gamme         `json:"gamme,omitempty"`
 	Sender                string        `json:"sender,omitempty"`
 	ScheduledDeliveryDate string        `json:"scheduledDeliveryDate,omitempty"`
@@ -54,7 +54,7 @@ type SMSResponse struct {
 	ScheduledDeliveryDate string  `json:"scheduledDeliveryDate,omitempty"`
 }
 
-/*type SMSResponseItem struct {
+type SMSResponseItem struct {
 	Success     bool    `json:"success,omitempty"`
 	Code        int     `json:"code,omitempty"`
 	NumberSMS   int     `json:"nbSms,omitempty"`
@@ -68,9 +68,9 @@ type BulkSMSResponse struct {
 	MessageID       int                `json:"message_id,omitempty"`
 	Currency        string             `json:"currency,omitempty"`
 	Cost            float64            `json:"cost,omitempty"`
-	NumberSMS       int                `json:"nbSMS,omitempty"`
-	SMSResponseList *[]SMSResponseItem `json:"SMSResponse_List,omiyempty"`
-}*/
+	NumberOfSMS     int                `json:"nbSMS,omitempty"`
+	SMSResponseList []*SMSResponseItem `json:"SMSResponse_List,omiyempty"`
+}
 
 // SendSMS sends SMS, either immediately or at a set time.
 // See: https://my.smspartner.fr/documentation-fr/api/v1/send-sms
@@ -79,16 +79,16 @@ type BulkSMSResponse struct {
 	--------------
 		client, err := smspartner.NewClient(&http.Client{})
 		// handle err
-		// d := smspartner.NewDate(2018, 8, 16, 17, 45)
-		// minute, err = d.MinuteToSendSMS()
+		d := smspartner.NewDate(2018, 8, 16, 17, 45)
+		minute, err = d.MinuteToSendSMS()
 		// handle err
 		sms := &smspartner.SMS{
 					PhoneNumbers:    "+212620xxxxxx, +212621xxxxxx",
 					Message: "This is your message",
 					Gamme: LowCost,
-					// ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
-					// Time: d.Time.Hour(),
-					// Minute: minute
+					ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
+					Time: d.Time.Hour(),
+					Minute: minute
 			},
 		}
 		res, err = client.SendSMS(sms)
@@ -127,9 +127,13 @@ func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 /*
 	Example usage:
 	--------------
-		client, err := smspartner.NewClient()
+		client, err := smspartner.NewClient(&http.Client{})
 		// handle err
-		blksms := &smspartner.BulkSMS{
+		// d := smspartner.NewDate(2018, 8, 16, 17, 45)
+		// minute, err = d.MinuteToSendSMS()
+		// handle err
+
+		bulksms := &smspartner.BulkSMS{
 			SMSList: []*smspartner.SMSPayload{
 				{
 					PhoneNumber:    "+212620xxxxxx",
@@ -140,16 +144,20 @@ func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 					Message: "This is your message",
 				},
 			},
+			Gamme: Premium,
+			ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
+			Time: d.Time.Hour(),
+			Minute: minute
 		}
-		res, err := client.SendBulkSMS(blksms)
+		res, err := client.SendBulkSMS(bulksms)
 		// handle err
-		// diplay response if any
+		// handle response
 
 */
-/*func (c *Client) SendBulkSMS(blksms *BulkSMS) (*BulkSMSResponse, error) {
-	blksms.APIKey = c.apiKey
+func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
+	bulksms.APIKey = c.apiKey
 
-	blob, err := json.Marshal(blksms)
+	blob, err := json.Marshal(bulksms)
 	if err != nil {
 		return nil, err
 	}
@@ -165,14 +173,14 @@ func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 		return nil, err
 	}
 
-	blksmsr := new(BulkSMSResponse)
-	if err := json.Unmarshal(blob, blksmsr); err != nil {
+	bulksmsr := new(BulkSMSResponse)
+	if err := json.Unmarshal(blob, bulksmsr); err != nil {
 		return nil, err
 	}
-	return blksmsr, nil
+	return bulksmsr, nil
 }
 
-type VNumber struct {
+/*type VNumber struct {
 	APIKey  string
 	To      string
 	From    string
