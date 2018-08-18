@@ -84,6 +84,34 @@ func TestSendSMS(t *testing.T) {
 	}
 }
 
+func TestSendSMSWithError(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+
+		b, err := fixture("send_sms_error.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
+	sms := &smspartner.SMS{}
+	res, err := cli.SendSMS(sms)
+
+	if res != nil {
+		t.Errorf("response should be nil, but got: %#v", res)
+	}
+
+	wantErr := "Le message est requis (and 5 other errors)"
+	if err.Error() != wantErr {
+		t.Errorf("got: %s want: %s", err, wantErr)
+	}
+}
+
 func TestSendBulkSMS(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -169,3 +197,17 @@ func fixture(path string) ([]byte, error) {
 	}
 	return b, nil
 }
+
+/*func readFromFileAndDeserialize(path string, save interface{}) error {
+	f, err := os.Open("testdata/" + path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, save)
+}*/
