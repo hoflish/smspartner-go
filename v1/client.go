@@ -97,7 +97,6 @@ func (c *Client) parseOptions(opts ...Option) error {
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.hc.Do(req)
-	// REVIEW:(hoflish) handle timeout error ?
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}

@@ -1,41 +1,65 @@
 package smspartner_test
 
 import (
+	"context"
+	"fmt"
+	"io/ioutil"
+	"net"
 	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 
-	smspartner "github.com/hoflish/smspartner-go/v1"
+	"github.com/hoflish/smspartner-go/v1"
 )
 
 func TestCredits(t *testing.T) {
-	client, err := smspartner.NewClient(&http.Client{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	res, err := client.CheckCredits()
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("credits.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
+	res, err := cli.CheckCredits()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	got := res.Credits.Currency
-	want := "EUR"
-	if got != want {
-		t.Errorf("got: '%s', want: '%s'", got, want)
+	gotUsername := res.User.Username
+	wantUsernme := "example@gmail.com"
+	if gotUsername != wantUsernme {
+		t.Errorf("got: '%s', want: '%s'", gotUsername, wantUsernme)
 	}
 }
 
 func TestSendSMS(t *testing.T) {
-	client, err := smspartner.NewClient(&http.Client{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("send_sms.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
 	d := smspartner.NewDate(2018, 8, 16, 17, 45)
 	minute, err := d.MinuteToSendSMS()
 	if err != nil {
 		t.Error(err)
 	}
 	sms := &smspartner.SMS{
-		PhoneNumbers: "0620xxxxxx",
+		PhoneNumbers: "0620123456",
 		Message:      "Your message goes here",
 		Gamme:        smspartner.LowCost,
 		ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
@@ -43,40 +67,36 @@ func TestSendSMS(t *testing.T) {
 		Minute: minute,
 	}
 
-	res, err := client.SendSMS(sms)
+	res, err := cli.SendSMS(sms)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tests := [...]struct {
-		res          *smspartner.SMSResponse
-		wantNbSMS    int
-		wantCost     float64
-		wantCurrency string
-	}{
-		{res, 1, 0.024, "EUR"},
+	wantNbOfSMS := 1
+	wantCurrency := "EUR"
+
+	if res.NumberOfSMS != wantNbOfSMS {
+		t.Errorf("got: %d, want: %d", res.NumberOfSMS, 1)
 	}
 
-	for _, tt := range tests {
-		if tt.res.NumberOfSMS != tt.wantNbSMS {
-			t.Errorf("got: %d, want: %d", tt.res.NumberOfSMS, tt.wantNbSMS)
-		}
-
-		if tt.res.Cost != tt.wantCost {
-			t.Errorf("got: %f, want: %f", tt.res.Cost, tt.wantCost)
-		}
-
-		if tt.res.Currency != tt.wantCurrency {
-			t.Errorf("got: %s, want: %s", tt.res.Currency, tt.wantCurrency)
-		}
+	if res.Currency != wantCurrency {
+		t.Errorf("got: %s, want: %s", res.Currency, wantCurrency)
 	}
 }
 
 func TestSendBulkSMS(t *testing.T) {
-	client, err := smspartner.NewClient(&http.Client{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("send_bulksms.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
 
 	d := smspartner.NewDate(2018, 8, 16, 18, 30)
 	minute, err := d.MinuteToSendSMS()
@@ -87,11 +107,11 @@ func TestSendBulkSMS(t *testing.T) {
 	bulksms := &smspartner.BulkSMS{
 		SMSList: []*smspartner.SMSPayload{
 			{
-				PhoneNumber: "0620xxxxxx",
+				PhoneNumber: "0620123456",
 				Message:     "Your message goes here",
 			},
 			{
-				PhoneNumber: "0666xxxxxx",
+				PhoneNumber: "0621123456",
 				Message:     "Your message goes here",
 			},
 		},
@@ -100,7 +120,7 @@ func TestSendBulkSMS(t *testing.T) {
 		Minute: minute,
 	}
 
-	res, err := client.SendBulkSMS(bulksms)
+	res, err := cli.SendBulkSMS(bulksms)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,4 +133,39 @@ func TestSendBulkSMS(t *testing.T) {
 	if res.Cost != totalCost {
 		t.Errorf("got: %f, want: %f", res.Cost, totalCost)
 	}
+}
+
+func testingHTTPClient(t *testing.T, handler http.Handler) (*smspartner.Client, func()) {
+	server := httptest.NewServer(handler)
+
+	cli := &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
+				return net.Dial(network, server.Listener.Addr().String())
+			},
+		},
+	}
+
+	testApiKey := smspartner.APIKey("TEST_API_KEY")
+
+	spClient, err := smspartner.NewClient(cli, testApiKey)
+	if err != nil {
+		t.Fatalf("error creating client: %v", err)
+	}
+
+	return spClient, server.Close
+}
+
+func fixture(path string) ([]byte, error) {
+	f, err := os.Open("testdata/" + path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
