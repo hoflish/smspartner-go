@@ -52,24 +52,17 @@ type SMSResponse struct {
 	Cost                  float64 `json:"cost,omitempty"`
 	Currency              string  `json:"currency,omitempty"`
 	ScheduledDeliveryDate string  `json:"scheduledDeliveryDate,omitempty"`
-}
-
-type SMSResponseItem struct {
-	Success     bool    `json:"success,omitempty"`
-	Code        int     `json:"code,omitempty"`
-	NumberSMS   int     `json:"nbSms,omitempty"`
-	Cost        float64 `json:"cost,omitempty"`
-	PhoneNumber string  `json:"phoneNumber,omitempty"`
+	PhoneNumber           string  `json:"phoneNumber,omitempty"`
 }
 
 type BulkSMSResponse struct {
-	Success         bool               `json:"success,omitempty"`
-	Code            int                `json:"code,omitempty"`
-	MessageID       int64              `json:"message_id,omitempty"`
-	Currency        string             `json:"currency,omitempty"`
-	Cost            float64            `json:"cost,omitempty"`
-	NumberOfSMS     int                `json:"nbSMS,omitempty"`
-	SMSResponseList []*SMSResponseItem `json:"SMSResponse_List,omiyempty"`
+	Success         bool           `json:"success,omitempty"`
+	Code            int            `json:"code,omitempty"`
+	MessageID       int64          `json:"message_id,omitempty"`
+	Currency        string         `json:"currency,omitempty"`
+	Cost            float64        `json:"cost,omitempty"`
+	NumberOfSMS     int            `json:"nbSMS,omitempty"`
+	SMSResponseList []*SMSResponse `json:"SMSResponse_List,omiyempty"`
 }
 
 // SendSMS sends SMS, either immediately or at a set time.
@@ -180,23 +173,11 @@ func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 	return bulksmsr, nil
 }
 
-/*type VNumber struct {
-	APIKey  string
-	To      string
-	From    string
-	Message string
-
-	// TODO: define optional params
-	// IsStopSMS
-	// Sandbox
-	//Format
-}
-
-// SendVirtualNumber sendw SMS, either immediately or at a set time, with a long number.
+// SendVirtualNumber sends SMS, either immediately or at a set time, with a long number.
 /*
 	Example usage:
 	--------------
-		client, err := smspartner.NewClient()
+		client, err := smspartner.NewClient(&http.Client{})
 		// handle err
 		vn := &smspartner.VNumber{
 			To: "+212620xxxxxx"
@@ -205,10 +186,10 @@ func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 		}
 		res, err := client.SendVirtualNumber(vn)
 		// handle err
-		// diplay response if any
+		// handle response
 
 */
-/*func (c *Client) SendVirtualNumber(vn *VNumber) (map[string]interface{}, error) {
+func (c *Client) SendVirtualNumber(vn *VNumber) (*SMSResponse, error) {
 	vn.APIKey = c.apiKey
 
 	blob, err := json.Marshal(vn)
@@ -227,10 +208,18 @@ func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 		return nil, err
 	}
 
-	var vnr map[string]interface{}
+	vnr := new(SMSResponse)
 	if err := json.Unmarshal(blob, &vnr); err != nil {
 		return nil, err
 	}
 	return vnr, nil
 }
-*/
+
+type VNumber struct {
+	APIKey, To, From, Message string
+
+	// TODO: define optional params
+	// IsStopSMS
+	// Sandbox
+	// Format
+}

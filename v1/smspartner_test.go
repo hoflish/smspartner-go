@@ -163,6 +163,10 @@ func TestSendBulkSMS(t *testing.T) {
 	}
 }
 
+func TestSendVirtualNumber(t *testing.T) {
+	t.Skip("Need to communicate with remote API team")
+}
+
 func testingHTTPClient(t *testing.T, handler http.Handler) (*smspartner.Client, func()) {
 	server := httptest.NewServer(handler)
 
