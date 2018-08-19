@@ -235,6 +235,35 @@ func TestVerifyNumberFormat(t *testing.T) {
 	}
 }
 
+func TestCancelSMS(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("cancel_sms.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
+	msgID := 2271595
+	res, err := cli.CancelSMS(msgID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gotMessage := res["message"]
+	wantMessage := "L'envoi du SMS a été annulé."
+
+	if gotMessage != wantMessage {
+		t.Errorf("got: %s, want: %s", gotMessage, wantMessage)
+	}
+
+}
+
 func testingHTTPClient(t *testing.T, handler http.Handler) (*smspartner.Client, func()) {
 	server := httptest.NewServer(handler)
 

@@ -47,7 +47,7 @@ type BulkSMS struct {
 type SMSResponse struct {
 	Success               bool    `json:"success,omitempty"`
 	Code                  int     `json:"code,omitempty"`
-	MessageID             int64   `json:"message_id,omitempty"`
+	MessageID             int     `json:"message_id,omitempty"`
 	NumberOfSMS           int     `json:"nb_sms,omitempty"`
 	Cost                  float64 `json:"cost,omitempty"`
 	Currency              string  `json:"currency,omitempty"`
@@ -58,7 +58,7 @@ type SMSResponse struct {
 type BulkSMSResponse struct {
 	Success         bool           `json:"success,omitempty"`
 	Code            int            `json:"code,omitempty"`
-	MessageID       int64          `json:"message_id,omitempty"`
+	MessageID       int            `json:"message_id,omitempty"`
 	Currency        string         `json:"currency,omitempty"`
 	Cost            float64        `json:"cost,omitempty"`
 	NumberOfSMS     int            `json:"nbSMS,omitempty"`
