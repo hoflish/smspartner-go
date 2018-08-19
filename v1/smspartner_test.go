@@ -167,6 +167,74 @@ func TestSendVirtualNumber(t *testing.T) {
 	t.Skip("Need to communicate with remote API team")
 }
 
+func TestVerifyNumber(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("verify_number.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
+	reqPayload := &smspartner.NumberVerificationReq{
+		PhoneNumbers: "+212620123456,+212621123456",
+	}
+
+	res, err := cli.VerifyNumber(reqPayload)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gotCost := res.Cost
+	wantCost := 0.005
+
+	if gotCost != wantCost {
+		t.Errorf("got: %f, want: %f", gotCost, wantCost)
+	}
+}
+
+func TestVerifyNumberFormat(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("lookup.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
+	phoneNumbers := []string{"+212620123456", "+212666123456"}
+	res, err := cli.VerifyNumberFormat(phoneNumbers...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gotLookupLength := len(res.Lookup) // number of phoneNumbers to verify
+	if gotLookupLength != 2 {
+		t.Errorf("got: %d, want: %d", gotLookupLength, 2)
+	}
+
+	for _, tt := range res.Lookup {
+		if tt.Success == true {
+			gotNetwork := tt.Network
+			wantNetwork := "Méditel"
+
+			if gotNetwork != wantNetwork {
+				t.Errorf("got: %s, want: %s", gotNetwork, wantNetwork)
+			}
+		}
+	}
+}
+
 func testingHTTPClient(t *testing.T, handler http.Handler) (*smspartner.Client, func()) {
 	server := httptest.NewServer(handler)
 
