@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hoflish/smspartner-go/v1"
@@ -262,6 +263,42 @@ func TestCancelSMS(t *testing.T) {
 		t.Errorf("got: %s, want: %s", gotMessage, wantMessage)
 	}
 
+}
+
+func TestGetSMSStatus(t *testing.T) {
+	t.Error("Not implemented yet")
+}
+
+func TestGetMultiSMSStatus(t *testing.T) {
+	t.Error("Not implemented yet")
+}
+
+func TestGetBulkSMSStatus(t *testing.T) {
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		b, err := fixture("bulk_status.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		fmt.Fprint(w, string(b))
+	})
+
+	cli, teardown := testingHTTPClient(t, h)
+	defer teardown()
+
+	msgID := 2270142
+	res, err := cli.GetBulkSMSStatus(msgID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gotMessageId := res.MessageID
+	wantMessageId := strconv.Itoa(msgID)
+
+	if gotMessageId != wantMessageId {
+		t.Errorf("got: %s, want: %s", gotMessageId, wantMessageId)
+	}
 }
 
 func testingHTTPClient(t *testing.T, handler http.Handler) (*smspartner.Client, func()) {
