@@ -301,6 +301,18 @@ func TestGetBulkSMSStatus(t *testing.T) {
 	}
 }
 
+func TestListStops(t *testing.T) {
+	t.Error("Not implemented yet")
+}
+
+func TestAddToStops(t *testing.T) {
+	t.Error("Not implemented yet")
+}
+
+func TestDeleteFromStops(t *testing.T) {
+	t.Error("Not implemented yet")
+}
+
 func testingHTTPClient(t *testing.T, handler http.Handler) (*smspartner.Client, func()) {
 	server := httptest.NewServer(handler)
 
@@ -335,17 +347,3 @@ func fixture(path string) ([]byte, error) {
 	}
 	return b, nil
 }
-
-/*func readFromFileAndDeserialize(path string, save interface{}) error {
-	f, err := os.Open("testdata/" + path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(b, save)
-}*/
