@@ -182,7 +182,7 @@ func TestVerifyNumber(t *testing.T) {
 	cli, teardown := testingHTTPClient(t, h)
 	defer teardown()
 
-	reqPayload := &smspartner.NumberVerificationReq{
+	reqPayload := &smspartner.NumberVerificationRequest{
 		PhoneNumbers: "+212620123456,+212621123456",
 	}
 

@@ -45,50 +45,27 @@ type BulkSMS struct {
 }
 
 type SMSResponse struct {
-	Success               bool    `json:"success,omitempty"`
-	Code                  int     `json:"code,omitempty"`
-	MessageID             int     `json:"message_id,omitempty"`
-	NumberOfSMS           int     `json:"nb_sms,omitempty"`
-	Cost                  float64 `json:"cost,omitempty"`
-	Currency              string  `json:"currency,omitempty"`
-	ScheduledDeliveryDate string  `json:"scheduledDeliveryDate,omitempty"`
-	PhoneNumber           string  `json:"phoneNumber,omitempty"`
+	Success               bool    `json:"success"`
+	Code                  int     `json:"code"`
+	MessageID             int     `json:"message_id"`
+	NumberOfSMS           int     `json:"nb_sms"`
+	Cost                  float64 `json:"cost"`
+	Currency              string  `json:"currency"`
+	ScheduledDeliveryDate string  `json:"scheduledDeliveryDate"`
+	PhoneNumber           string  `json:"phoneNumber"`
 }
 
 type BulkSMSResponse struct {
-	Success         bool           `json:"success,omitempty"`
-	Code            int            `json:"code,omitempty"`
-	MessageID       int            `json:"message_id,omitempty"`
-	Currency        string         `json:"currency,omitempty"`
-	Cost            float64        `json:"cost,omitempty"`
-	NumberOfSMS     int            `json:"nbSMS,omitempty"`
-	SMSResponseList []*SMSResponse `json:"SMSResponse_List,omiyempty"`
+	Success         bool           `json:"success"`
+	Code            int            `json:"code"`
+	MessageID       int            `json:"message_id"`
+	Currency        string         `json:"currency"`
+	Cost            float64        `json:"cost"`
+	NumberOfSMS     int            `json:"nbSMS"`
+	SMSResponseList []*SMSResponse `json:"SMSResponse_List"`
 }
 
 // SendSMS sends SMS, either immediately or at a set time.
-// See: https://my.smspartner.fr/documentation-fr/api/v1/send-sms
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient(&http.Client{})
-		// handle err
-		d := smspartner.NewDate(2018, 8, 16, 17, 45)
-		minute, err = d.MinuteToSendSMS()
-		// handle err
-		sms := &smspartner.SMS{
-					PhoneNumbers:    "+212620xxxxxx, +212621xxxxxx",
-					Message: "This is your message",
-					Gamme: LowCost,
-					ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
-					Time: d.Time.Hour(),
-					Minute: minute
-			},
-		}
-		res, err = client.SendSMS(sms)
-		// handle err
-		// handle response
-
-*/
 func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 	sms.APIKey = c.apiKey
 
@@ -116,37 +93,6 @@ func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 }
 
 // SendBulkSMS sends SMS in batch of 500 either immediately or at a set time.
-// See: https://my.smspartner.fr/documentation-fr/api/v1/bulk-send
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient(&http.Client{})
-		// handle err
-		// d := smspartner.NewDate(2018, 8, 16, 17, 45)
-		// minute, err = d.MinuteToSendSMS()
-		// handle err
-
-		bulksms := &smspartner.BulkSMS{
-			SMSList: []*smspartner.SMSPayload{
-				{
-					PhoneNumber:    "+212620xxxxxx",
-					Message: "This is your message",
-				},
-				{
-					PhoneNumber:    "+212620xxxxxx",
-					Message: "This is your message",
-				},
-			},
-			Gamme: Premium,
-			ScheduledDeliveryDate: d.ScheduledDeliveryDate(),
-			Time: d.Time.Hour(),
-			Minute: minute
-		}
-		res, err := client.SendBulkSMS(bulksms)
-		// handle err
-		// handle response
-
-*/
 func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 	bulksms.APIKey = c.apiKey
 
@@ -174,21 +120,6 @@ func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 }
 
 // SendVirtualNumber sends SMS, either immediately or at a set time, with a long number.
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient(&http.Client{})
-		// handle err
-		vn := &smspartner.VNumber{
-			To: "+212620xxxxxx"
-			From: "+212620xxxxxx"
-			Message: "This is your message"
-		}
-		res, err := client.SendVirtualNumber(vn)
-		// handle err
-		// handle response
-
-*/
 func (c *Client) SendVirtualNumber(vn *VNumber) (*SMSResponse, error) {
 	vn.APIKey = c.apiKey
 

@@ -9,13 +9,13 @@ import (
 	"strings"
 )
 
-type NumberVerificationReq struct {
+type NumberVerificationRequest struct {
 	APIKey       string `json:"apiKey,omitempty"`
 	PhoneNumbers string `json:"phoneNumbers,omitempty"`
 	NotifyURL    string `json:"notifyUrl,omitempty"`
 }
 
-type NumberVerificationResp struct {
+type NumberVerificationResponse struct {
 	Success    bool    `json:"success,omitempty"`
 	Code       int     `json:"code,omitempty"`
 	CampaignID string  `json:"campaign_id,omitempty"`
@@ -25,20 +25,7 @@ type NumberVerificationResp struct {
 }
 
 // VerifyNumber checks that a phone number actually exists.
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient(&http.Client{})
-		// handle err
-		reqPayload := &NumberVerificationReq{
-			PhoneNumbers: "+212620xxxxxx,+212621xxxxxx",
-			NotifyURL: "http://example.com/api/hlr/notify"
-		}
-		res, err := client.VerifyNumber(reqPayload)
-		// handle err
-		// handle response
-*/
-func (c *Client) VerifyNumber(reqPayload *NumberVerificationReq) (*NumberVerificationResp, error) {
+func (c *Client) VerifyNumber(reqPayload *NumberVerificationRequest) (*NumberVerificationResponse, error) {
 	reqPayload.APIKey = c.apiKey
 
 	blob, err := json.Marshal(reqPayload)
@@ -57,7 +44,7 @@ func (c *Client) VerifyNumber(reqPayload *NumberVerificationReq) (*NumberVerific
 		return nil, err
 	}
 
-	nvr := new(NumberVerificationResp)
+	nvr := new(NumberVerificationResponse)
 	if err := json.Unmarshal(blob, &nvr); err != nil {
 		return nil, err
 	}
@@ -71,7 +58,7 @@ type NumberFormat struct {
 	RFC3966       string `json:"rfc3966,omitempty"`
 }
 
-type LookupItem struct {
+type Lookup struct {
 	Request     string        `json:"request,omitempty"`
 	Success     bool          `json:"success,omitempty"`
 	CountryCode string        `json:"countryCode,omitempty"`
@@ -82,30 +69,20 @@ type LookupItem struct {
 	Format      *NumberFormat `json:"format,omitempty"`
 }
 
-type LookupResp struct {
-	Success bool          `json:"success,omitempty"`
-	Code    int           `json:"code,omitempty"`
-	Lookup  []*LookupItem `json:"lookup,omitempty"`
+type LookupResponse struct {
+	Success bool      `json:"success,omitempty"`
+	Code    int       `json:"code,omitempty"`
+	Lookup  []*Lookup `json:"lookup,omitempty"`
 }
 
 // VerifyNumberFormat checks the format of a phone number
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient(&http.Client{})
-		// handle err
-		phoneNumbers := []string{"+212620xxxxxx", "+212621xxxxxx"}
-		res, err := client.VerifyNumberFormat(phoneNumbers...)
-		// handle err
-		// handle response
-*/
-func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResp, error) {
+func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResponse, error) {
 	if len(phoneNumbers) == 0 {
 		return nil, errors.New("At least one phoneNumber is required")
 	}
 	p := strings.Join(phoneNumbers, ",")
 
-	payload := new(NumberVerificationReq)
+	payload := new(NumberVerificationRequest)
 	payload.APIKey = c.apiKey
 	payload.PhoneNumbers = p
 
@@ -125,7 +102,7 @@ func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResp, error)
 		return nil, err
 	}
 
-	lr := new(LookupResp)
+	lr := new(LookupResponse)
 	if err := json.Unmarshal(blob, lr); err != nil {
 		return nil, err
 	}
