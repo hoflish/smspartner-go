@@ -40,9 +40,6 @@ type MultiSMSStatusResp struct {
 }
 
 // GetSMSStatus returns the status of an SMS
-/*
-	TODO: Add example usage
-*/
 func (c *Client) GetSMSStatus(messageID int, phoneNumber string) (*SMSStatusResp, error) {
 	fullURL := fmt.Sprintf("%s/message-status?apiKey=%s&messageId=%d&phoneNumber=%s", c.basePath, c.apiKey, messageID, phoneNumber)
 	req, err := http.NewRequest("GET", fullURL, nil)
@@ -63,29 +60,6 @@ func (c *Client) GetSMSStatus(messageID int, phoneNumber string) (*SMSStatusResp
 }
 
 // GetMultiSMSStatus returns the status of multiple SMS
-/*
-	// TODO: refactor this example
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient()
-		// handle err
-		ss := &smspartner.SMSStatusWrap{
-			SMSStatusList: []*smspartner.SMSStatus{
-				{
-					PhoneNumber: "+212620xxxxxx",
-					MessageId: xxxx
-				},
-				{
-					PhoneNumber: "+212621xxxxxx",
-					MessageId: xxxx
-				}
-			}
-		}
-		res, err := client.GetMultiSMSStatus(ss)
-		// handle err
-		// display response if any
-
-*/
 func (c *Client) GetMultiSMSStatus(ss *MultiSMSStatusReq) (*MultiSMSStatusResp, error) {
 	ss.APIKey = c.apiKey
 	blob, err := json.Marshal(ss)
