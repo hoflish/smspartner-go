@@ -9,51 +9,80 @@ import (
 	"strings"
 )
 
-type NumFormat struct {
-	E164          string
-	International string
-	National      string
-	RFC3966       string
+type NumberVerificationRequest struct {
+	APIKey       string `json:"apiKey,omitempty"`
+	PhoneNumbers string `json:"phoneNumbers,omitempty"`
+	NotifyURL    string `json:"notifyUrl,omitempty"`
 }
 
-type LookupItem struct {
-	Request     string
-	Success     bool
-	CountryCode string
-	PrefixCode  int
-	PhoneNumber string
-	Type        string
-	Network     string
-	Format      *NumFormat
+type NumberVerificationResponse struct {
+	Success    bool    `json:"success,omitempty"`
+	Code       int     `json:"code,omitempty"`
+	CampaignID string  `json:"campaign_id,omitempty"`
+	Number     int     `json:"number,omitempty"`
+	Cost       float64 `json:"cost,omitempty"`
+	Currency   string  `json:"currency,omitempty"`
+}
+
+// VerifyNumber checks that a phone number actually exists.
+func (c *Client) VerifyNumber(reqPayload *NumberVerificationRequest) (*NumberVerificationResponse, error) {
+	reqPayload.APIKey = c.apiKey
+
+	blob, err := json.Marshal(reqPayload)
+	if err != nil {
+		return nil, err
+	}
+	fullURL := fmt.Sprintf("%s/hlr/notify", c.basePath)
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err = c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	nvr := new(NumberVerificationResponse)
+	if err := json.Unmarshal(blob, &nvr); err != nil {
+		return nil, err
+	}
+	return nvr, nil
+}
+
+type NumberFormat struct {
+	E164          string `json:"e164,omitempty"`
+	International string `json:"international,omitempty"`
+	National      string `json:"national,omitempty"`
+	RFC3966       string `json:"rfc3966,omitempty"`
+}
+
+type Lookup struct {
+	Request     string        `json:"request,omitempty"`
+	Success     bool          `json:"success,omitempty"`
+	CountryCode string        `json:"countryCode,omitempty"`
+	PrefixCode  int           `json:"prefixCode,omitempty"`
+	PhoneNumber string        `json:"phoneNumber,omitempty"`
+	Type        string        `json:"type,omitempty"`
+	Network     string        `json:"network,omitempty"`
+	Format      *NumberFormat `json:"format,omitempty"`
 }
 
 type LookupResponse struct {
-	Success bool
-	Code    int
-	Lookup  *[]LookupItem
+	Success bool      `json:"success,omitempty"`
+	Code    int       `json:"code,omitempty"`
+	Lookup  []*Lookup `json:"lookup,omitempty"`
 }
 
 // VerifyNumberFormat checks the format of a phone number
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient()
-		// handle err
-		phoneNumbers := []string{"+212620xxxxxx", "+212621xxxxxx"}
-		res, err := client.VerifyNumberFormat(phoneNumbers...)
-		// handle err
-		// display response if any
-*/
 func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResponse, error) {
 	if len(phoneNumbers) == 0 {
-		return nil, errors.New("phoneNumber is required")
+		return nil, errors.New("At least one phoneNumber is required")
 	}
 	p := strings.Join(phoneNumbers, ",")
 
-	var payload struct {
-		APIKey       string `json:"apiKey"`
-		PhoneNumbers string `json:"phoneNumbers"`
-	}
+	payload := new(NumberVerificationRequest)
 	payload.APIKey = c.apiKey
 	payload.PhoneNumbers = p
 
@@ -78,50 +107,4 @@ func (c *Client) VerifyNumberFormat(phoneNumbers ...string) (*LookupResponse, er
 		return nil, err
 	}
 	return lr, nil
-}
-
-type HLRNotify struct {
-	APIKey       string
-	PhoneNumbers string
-	NotifyURL    string
-}
-
-// CheckNumberValidity checks that a phone number actually exists.
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient()
-		// handle err
-		hlrNotify := &HLRNotify{
-			PhoneNumbers: "+212620xxxxxx,+212621xxxxxx",
-			NotifyURL: "http://example.com/api/notify"
-		}
-		res, err := client.CheckNumberValidity(hlrNotify)
-		// handle err
-		// display response if any
-*/
-func (c *Client) CheckNumberValidity(hlrn *HLRNotify) (map[string]interface{}, error) {
-	hlrn.APIKey = c.apiKey
-
-	blob, err := json.Marshal(hlrn)
-	if err != nil {
-		return nil, err
-	}
-	fullURL := fmt.Sprintf("%s/hlr/notify", c.basePath)
-
-	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
-	if err != nil {
-		return nil, err
-	}
-
-	blob, err = c.doRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var m map[string]interface{}
-	if err := json.Unmarshal(blob, &m); err != nil {
-		return nil, err
-	}
-	return m, nil
 }

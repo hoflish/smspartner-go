@@ -6,39 +6,32 @@ import (
 	"net/http"
 )
 
-type Profile struct {
-	Username  string `json:"username,omitempty"`
-	ID        int    `json:"id,omitempty"`
-	FirstName string `json:"firstname,omitempty"`
-	LastName  string `json:"lastname,omitempty"`
+type User struct {
+	Username  string `json:"username"`
+	ID        int    `json:"id"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
 }
 
 type Credits struct {
-	CreditSMS int `json:"creditSms,omitempty"`
-	ToSend    int `json:"toSend,omitempty"`
-	Solde     int `json:"solde,omitempty"`
+	Balance          string `json:"balance"`
+	CreditHlr        int    `json:"creditHlr"`
+	CreditSMS        int    `json:"creditSms"`
+	CreditSmsLowCost int    `json:"creditSmsLowCost"`
+	Currency         string `json:"currency"`
+	ToSend           int    `json:"toSend"`
+	Solde            string `json:"solde"`
 }
 
 type CreditsResponse struct {
-	Success bool     `json:"success,omitempty"`
-	Code    int      `json:"code,omitempty"`
-	User    *Profile `json:"user,omitempty"`
-	Credits *Credits `json:"credits,omitempty"`
+	Success bool     `json:"success"`
+	Code    int      `json:"code"`
+	User    *User    `json:"user"`
+	Credits *Credits `json:"credits"`
 }
 
-// CheckCredits return your SMS credit (number of SMS available, based on your own purchases and usage),
-// as well as the number of SMS that are about to be sent.
-// See: https://my.smspartner.fr/documentation-fr/api/v1
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient()
-		// handle err
-		res, err := client.CheckCredits()
-		// handle err
-		// display response if any
-
-*/
+// CheckCredits returns your SMS credit (number of SMS available, based on your
+// own purchases and usage), as well as the number of SMS that are about to be sent.
 func (c *Client) CheckCredits() (*CreditsResponse, error) {
 	fullURL := fmt.Sprintf("%s/me?apiKey=%s", c.basePath, c.apiKey)
 	req, err := http.NewRequest("GET", fullURL, nil)
@@ -50,7 +43,7 @@ func (c *Client) CheckCredits() (*CreditsResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	// REVIEW: handle success response
+
 	credits := new(CreditsResponse)
 	if err := json.Unmarshal(res, credits); err != nil {
 		return nil, err
