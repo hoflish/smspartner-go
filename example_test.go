@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	smspartner "github.com/hoflish/smspartner-go/v1"
+	"github.com/hoflish/smspartner-go/v1"
 )
 
 func Example_client_CheckCredits() {
