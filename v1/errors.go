@@ -5,7 +5,7 @@ import "fmt"
 // RemoteAPIError is used to handle API error response
 // if there are errors (Success == false && Code != 200) the client library
 // returns a summary of all errors (e.g., "one error (and 2 other errors)").
-// TODO:(hoflish) give client-lib users an option to get verbose errors to handle them
+// TODO:(hoflish) give client-lib users an option to get verbose errors
 type RemoteAPIError struct {
 	Success bool               `json:"success,omitempty"`
 	Code    int                `json:"code,omitempty"`
