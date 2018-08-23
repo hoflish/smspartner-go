@@ -24,15 +24,15 @@ type Client struct {
 }
 
 // NewClient returns an HTTP client.
-func NewClient(client *http.Client) (*Client, error) {
+func NewClient(c *http.Client, opts ...Option) (*Client, error) {
 	wrapClient := new(http.Client)
-	*wrapClient = *client
+	*wrapClient = *c
 
-	t := client.Timeout
+	t := c.Timeout
 	if t == 0 {
 		t = clientDefaultTimeout
 	}
-	tr := client.Transport
+	tr := c.Transport
 	if tr == nil {
 		tr = http.DefaultTransport
 	}
@@ -45,11 +45,17 @@ func NewClient(client *http.Client) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{
+	client := &Client{
 		hc:       wrapClient,
 		apiKey:   apiKey,
 		basePath: apiBasePath,
-	}, nil
+	}
+
+	if err := client.parseOptions(opts...); err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func getAPIKeyFromEnv() (string, error) {
@@ -58,6 +64,32 @@ func getAPIKeyFromEnv() (string, error) {
 		return "", errUnsetAPIKey
 	}
 	return apikey, nil
+}
+
+type Option func(*Client) error
+
+func BasePath(basePath string) Option {
+	return func(c *Client) error {
+		c.basePath = basePath
+		return nil
+	}
+}
+
+func APIKey(apiKey string) Option {
+	return func(c *Client) error {
+		c.apiKey = apiKey
+		return nil
+	}
+}
+
+func (c *Client) parseOptions(opts ...Option) error {
+	for _, option := range opts {
+		err := option(c)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // REVIEW:(hoflish) add context to client methods
@@ -78,16 +110,19 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	// handle non-200 status code
 	if resp.StatusCode != http.StatusOK {
-		remResp := &Response{}
-		if err := json.Unmarshal(body, remResp); err != nil {
+		remAPIErr := &RemoteAPIError{}
+		if err := json.Unmarshal(body, remAPIErr); err != nil {
 			return nil, fmt.Errorf("error unmarshalling response: %v", err)
 		}
 
-		if !remResp.Success && remResp.Code != 200 {
-			return nil, errors.New(remResp.errorSummary())
+		if !remAPIErr.Success && remAPIErr.Code != 200 {
+			if remAPIErr.Message != "" {
+				return nil, errors.New(remAPIErr.Message)
+			}
+			return nil, errors.New(remAPIErr.Error())
 		}
 
-		if remResp == nil {
+		if remAPIErr == nil {
 			return nil, fmt.Errorf("unexpected response: %s", string(body))
 		}
 	}
