@@ -92,12 +92,9 @@ func (c *Client) parseOptions(opts ...Option) error {
 	return nil
 }
 
-// REVIEW:(hoflish) add context to client methods
-// IMPORTANT: on client side, do we really need context ??
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.hc.Do(req)
-	// REVIEW:(hoflish) handle timeout error ?
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %v", err)
 	}
@@ -126,6 +123,5 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 			return nil, fmt.Errorf("unexpected response: %s", string(body))
 		}
 	}
-	// Note: each client method handle its expected response data
 	return body, nil
 }

@@ -68,13 +68,12 @@ type BulkSMSResponse struct {
 // SendSMS sends SMS, either immediately or at a set time.
 func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 	sms.APIKey = c.apiKey
-
 	blob, err := json.Marshal(sms)
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/send", c.basePath)
 
+	fullURL := fmt.Sprintf("%s/send", c.basePath)
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {
 		return nil, err
@@ -95,13 +94,12 @@ func (c *Client) SendSMS(sms *SMS) (*SMSResponse, error) {
 // SendBulkSMS sends SMS in batch of 500 either immediately or at a set time.
 func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 	bulksms.APIKey = c.apiKey
-
 	blob, err := json.Marshal(bulksms)
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/bulk-send", c.basePath)
 
+	fullURL := fmt.Sprintf("%s/bulk-send", c.basePath)
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {
 		return nil, err
@@ -122,13 +120,12 @@ func (c *Client) SendBulkSMS(bulksms *BulkSMS) (*BulkSMSResponse, error) {
 // SendVirtualNumber sends SMS, either immediately or at a set time, with a long number.
 func (c *Client) SendVirtualNumber(vn *VNumber) (*SMSResponse, error) {
 	vn.APIKey = c.apiKey
-
 	blob, err := json.Marshal(vn)
 	if err != nil {
 		return nil, err
 	}
-	fullURL := fmt.Sprintf("%s/vn/send", c.basePath)
 
+	fullURL := fmt.Sprintf("%s/vn/send", c.basePath)
 	req, err := http.NewRequest("POST", fullURL, bytes.NewReader(blob))
 	if err != nil {
 		return nil, err
