@@ -23,7 +23,7 @@ type Client struct {
 	apiKey   string
 }
 
-// NewClient returns an HTTP client.
+// NewClient returns a HTTP client.
 func NewClient(c *http.Client, opts ...Option) (*Client, error) {
 	wrapClient := new(http.Client)
 	*wrapClient = *c

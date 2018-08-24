@@ -7,8 +7,10 @@ import (
 	"net/http"
 )
 
+// Gamme is the SMS range to specify when sending SMS
 type Gamme int
 
+// List of values that Gamme can take.
 const (
 	Premium Gamme = 1
 	LowCost Gamme = 2

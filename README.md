@@ -2,7 +2,7 @@
 
 ## Summary
 
-SMSPartener API client in Go
+SMSPartner API client in Go
 
 ## Requirements:
 
