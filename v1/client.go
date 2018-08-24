@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 const envSMSPartnerAPIKey = "SMSPARTNER_API_KEY"
 const apiBasePath = "http://api.smspartner.fr/v1"
+const clientDefaultTimeout time.Duration = 10 * time.Second
 
 var errUnsetAPIKey = fmt.Errorf("could not find %q in your environment", envSMSPartnerAPIKey)
 
@@ -21,25 +23,39 @@ type Client struct {
 	apiKey   string
 }
 
-func NewClient(client *http.Client) (*Client, error) {
+// NewClient returns a HTTP client.
+func NewClient(c *http.Client, opts ...Option) (*Client, error) {
 	wrapClient := new(http.Client)
-	*wrapClient = *client
+	*wrapClient = *c
 
-	t := client.Transport
-	if t == nil {
-		t = http.DefaultTransport
+	t := c.Timeout
+	if t == 0 {
+		t = clientDefaultTimeout
 	}
+	tr := c.Transport
+	if tr == nil {
+		tr = http.DefaultTransport
+	}
+
+	wrapClient.Timeout = t
+	wrapClient.Transport = tr
 
 	apiKey, err := getAPIKeyFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{
+	client := &Client{
 		hc:       wrapClient,
 		apiKey:   apiKey,
 		basePath: apiBasePath,
-	}, nil
+	}
+
+	if err := client.parseOptions(opts...); err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func getAPIKeyFromEnv() (string, error) {
@@ -48,6 +64,32 @@ func getAPIKeyFromEnv() (string, error) {
 		return "", errUnsetAPIKey
 	}
 	return apikey, nil
+}
+
+type Option func(*Client) error
+
+func BasePath(basePath string) Option {
+	return func(c *Client) error {
+		c.basePath = basePath
+		return nil
+	}
+}
+
+func APIKey(apiKey string) Option {
+	return func(c *Client) error {
+		c.apiKey = apiKey
+		return nil
+	}
+}
+
+func (c *Client) parseOptions(opts ...Option) error {
+	for _, option := range opts {
+		err := option(c)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
@@ -65,64 +107,21 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	// handle non-200 status code
 	if resp.StatusCode != http.StatusOK {
-		remResp := &Response{}
-		if err := json.Unmarshal(body, remResp); err != nil {
+		remAPIErr := &RemoteAPIError{}
+		if err := json.Unmarshal(body, remAPIErr); err != nil {
 			return nil, fmt.Errorf("error unmarshalling response: %v", err)
 		}
 
-		if !remResp.Success && remResp.Code != 200 {
-			return nil, errors.New(remResp.errorSummary())
+		if !remAPIErr.Success && remAPIErr.Code != 200 {
+			if remAPIErr.Message != "" {
+				return nil, errors.New(remAPIErr.Message)
+			}
+			return nil, errors.New(remAPIErr.Error())
 		}
 
-		if remResp == nil {
+		if remAPIErr == nil {
 			return nil, fmt.Errorf("unexpected response: %s", string(body))
 		}
 	}
-	// Each client method handle its expected response data
 	return body, nil
-}
-
-// Response ,anonymous struct type, has minimal struct fields to check a server response
-// other object keys are ignored
-type Response struct {
-	Success bool               `json:"success"`
-	Code    int                `json:"code"`
-	Message string             `json:"message,omitempty"`
-	VError  []*ValidationError `json:"error,omitempty"`
-}
-
-type ValidationError struct {
-	ElementID string `json:"elementId,omitempty"`
-	Message   string `json:"message,omitempty"`
-}
-
-func (r *Response) hasVError() bool {
-	if r == nil {
-		return false
-	}
-	return len(r.VError) > 0
-}
-
-func (r *Response) errorSummary() string {
-	if r.hasVError() {
-		msg, n := "", 0
-		for _, e := range r.VError {
-			if e != nil {
-				if n == 0 {
-					msg = e.Message
-				}
-				n++
-			}
-		}
-		switch n {
-		case 0:
-			return "(0 errors)"
-		case 1:
-			return msg
-		case 2:
-			return msg + " (and 1 other error)"
-		}
-		return fmt.Sprintf("%s (and %d other errors)", msg, n-1)
-	}
-	return r.Message
 }

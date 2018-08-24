@@ -3,3 +3,6 @@
 *.exe~                                                                    
 *.test                                                                    
 *.out                                                                     
+
+# environment variables
+.env

@@ -7,16 +7,6 @@ import (
 )
 
 // CancelSMS cancel sending a sent SMS
-/*
-	Example usage:
-	--------------
-		client, err := smspartner.NewClient()
-		// handle err
-		messageID := "xxxx"
-		res, err := client.CancelSMS(messageID)
-		// handle err
-		// display response if any
-*/
 func (c *Client) CancelSMS(msgID int) (map[string]interface{}, error) {
 	fullURL := fmt.Sprintf("%s/message-cancel?apiKey=%s&messageId=%d", c.basePath, c.apiKey, msgID)
 	req, err := http.NewRequest("GET", fullURL, nil)
